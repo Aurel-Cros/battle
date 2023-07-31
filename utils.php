@@ -1,13 +1,21 @@
 <?php
-function heal(array &$john, int $amount = 20): bool
-{
-    if ($john['mana'] >= $amount) {
-        $john['mana'] -= $amount;
-        $john['health'] = min($john['max-health'], $john['health'] + $john['max-health'] * $amount / 100);
-        return true;
-    }
 
-    return false;
+/**
+ * Refills fighters "john"'s health by a percentage of their max health, and consumes that much mana in exchange.
+ * Returns true if healing is applied, or false if mana is depleted.
+ * 
+ * @param array &$john
+ * @param int $amount
+ * @return int
+ */
+function heal(array &$john): int
+{
+    if ($john['mana'] >= $john['healing-ratio']) {
+        $john['mana'] -= $john['healing-ratio'];
+        $john['health'] = round(min($john['max-health'], $john['health'] + $john['max-health'] * $john['healing-ratio'] / 100));
+        return $john['healing-ratio'];
+    } else
+        return 0;
 }
 
 function areInputsValid(array $player, array $opponent): bool

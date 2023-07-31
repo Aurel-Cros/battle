@@ -34,9 +34,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
         if ($allowStart) {
             $player['max-health'] = $player['health'];
-            $opponent['max-health'] = $opponent['health'];
             $player['max-mana'] = $player['mana'];
+            $player['healing-ratio'] = random_int(10, 30);
+            $opponent['max-health'] = $opponent['health'];
             $opponent['max-mana'] = $opponent['mana'];
+            $opponent['healing-ratio'] = random_int(10, 30);
 
             $isStarted = true;
         } else {
@@ -69,12 +71,16 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     } elseif (isset($_POST['soin'])) {
         // Lors d'un soin, si le combat est toujours en cours, on échange de la mana pour du soin
         if ($player['health'] < $player['max-health']) {
-            heal($player, 20);
-            $battleLog[] = $player['name'] . " se soigne ! ";
+            $amountHealed = heal($player);
+            var_dump($amountHealed);
+
+            $battleLog[] = $player['name'] . ($amountHealed ? " se soigne $amountHealed points de vie !" : " n'a plus de mana et n'a pas pu se soigner !");
         }
         if ($opponent['health'] < $opponent['max-health']) {
-            heal($opponent, 15);
-            $battleLog[] = $opponent['name'] . " en profite pour bander ses plaies également !";
+            $amountHealed = heal($opponent);
+            var_dump($amountHealed);
+
+            $battleLog[] = $opponent['name'] . ($amountHealed ? " en profite pour bander ses plaies et récupère $amountHealed points de vie !" : " n'a plus de mana et n'a pas pu se soigner !");
         }
     }
 
