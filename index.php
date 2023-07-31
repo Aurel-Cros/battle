@@ -21,6 +21,7 @@ function heal(&$john, $amount = 20)
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     if (isset($_POST['player'], $_POST['adversaire'])) {
+        // Lorsqu'on poste les infos pour définir les combattants, on récupère les infos et initialise le combat
         $player = $_POST['player'];
         $opponent = $_POST['adversaire'];
 
@@ -30,12 +31,24 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $opponent['max-mana'] = $opponent['mana'];
 
         $_SESSION['isEnded'] = false;
-        $winner = null;
         unset($battleLog);
         $battleLog = [];
+    } elseif (isset($_POST['restart'])) {
+        // Lors du restart, on vide le battlelog, et on réinitialise les variables
+        unset($battleLog);
+        $battleLog = [];
+        $player['sante'] = $player['max-health'];
+        $player['mana'] = $player['max-mana'];
+        $opponent['sante'] = $opponent['max-health'];
+        $opponent['mana'] = $opponent['max-mana'];
+
+        $winner = null;
+        $_SESSION['isEnded'] = false;
     } elseif (
         isset($_POST['attaque']) && !$_SESSION['isEnded']
     ) {
+        // Lors d'une attaque, si le combat est toujours en cours, on baisse les vies des combattants puis on check si KO
+
         $opponent['sante'] = max(0, $opponent['sante'] - $player['attaque']);
         $player['sante'] = max(0, $player['sante'] - $opponent['attaque']);
 
@@ -56,20 +69,15 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $winner = 3;
         }
     } elseif (isset($_POST['soin']) && !$_SESSION['isEnded']) {
-        heal($player, 20);
-        heal($opponent, 15);
-        $battleLog[] = $player['name'] . " se soigne ! ";
-        $battleLog[] = $opponent['name'] . " en profite pour bander ses plaies également !";
-    } elseif (isset($_POST['restart'])) {
-        unset($battleLog);
-        $battleLog = [];
-        $player['sante'] = $player['max-health'];
-        $player['mana'] = $player['max-mana'];
-        $opponent['sante'] = $opponent['max-health'];
-        $opponent['mana'] = $opponent['max-mana'];
-
-        $winner = null;
-        $_SESSION['isEnded'] = false;
+        // Lors d'un soin, si le combat est toujours en cours, on échange de la mana pour du soin
+        if ($player['sante'] < $player['max-health']) {
+            heal($player, 20);
+            $battleLog[] = $player['name'] . " se soigne ! ";
+        }
+        if ($opponent['sante'] < $opponent['max-health']) {
+            heal($opponent, 15);
+            $battleLog[] = $opponent['name'] . " en profite pour bander ses plaies également !";
+        }
     }
 
     $_SESSION['player'] = $player;
@@ -210,25 +218,28 @@ if ($winner) {
                     </form>
                 </div>
             <?php
+            } else {
+            ?>
+                <div id="combats">
+                    <h2>Combat</h2>
+                    <form id='actionForm' action="index.php" method="post">
+                        <div class="d-flex justify-content-center">
+                            <input id="attaque" name="attaque" type="submit" value="Attaquer">
+                            <input name="soin" type="submit" value="Se soigner">
+                        </div>
+                        <div class="d-flex justify-content-center">
+                            <input id="restart" name="restart" type="submit" value="Stopper le combat">
+                        </div>
+                    </form>
+                    <ul class="battleLog">
+                        <?php foreach ($battleLog as $line) {
+                            echo "<li>$line</li>";
+                        }; ?>
+                    </ul>
+                </div>
+            <?php
             }
             ?>
-            <div id="combats">
-                <h2>Combat</h2>
-                <form id='actionForm' action="index.php" method="post">
-                    <div class="d-flex justify-content-center">
-                        <input id="attaque" name="attaque" type="submit" value="Attaquer">
-                        <input name="soin" type="submit" value="Se soigner">
-                    </div>
-                    <div class="d-flex justify-content-center">
-                        <input id="restart" name="restart" type="submit" value="Stopper le combat">
-                    </div>
-                </form>
-                <ul class="battleLog">
-                    <?php foreach ($battleLog as $line) {
-                        echo "<li>$line</li>";
-                    }; ?>
-                </ul>
-            </div>
         </div>
     </div>
     <script>
