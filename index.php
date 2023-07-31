@@ -1,14 +1,17 @@
 <?php
 session_start();
 require_once __DIR__ . '/vendor/autoload.php';
+require_once './utils.php';
 
 if (isset($_POST['restart'])) {
     // Lors du restart, on vide le battlelog, et on réinitialise les variables
     unset($_SESSION['battleLog']);
-    unset($_SESSION['player']);
-    unset($_SESSION['opponent']);
+    $_SESSION['player']['sante'] = $_SESSION['player']['max-health'];
+    $_SESSION['player']['mana'] = $_SESSION['player']['max-mana'];
 
-    $_SESSION['isEnded'] = false;
+    $_SESSION['opponent']['sante'] = $_SESSION['opponent']['max-health'];
+    $_SESSION['opponent']['mana'] = $_SESSION['opponent']['max-mana'];
+
     $_SESSION['isStarted'] = false;
 }
 $isStarted = $_SESSION['isStarted'] ?? false;
@@ -18,16 +21,6 @@ $battleLog = $_SESSION['battleLog'] ?? [];
 
 $winner = null;
 
-function heal(&$john, $amount = 20)
-{
-    if ($john['mana'] >= $amount) {
-        $john['mana'] -= $amount;
-        $john['sante'] = min($john['max-health'], $john['sante'] + $john['max-health'] * $amount / 100);
-        return true;
-    }
-
-    return false;
-}
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     if (isset($_POST['player'], $_POST['adversaire'])) {
@@ -40,12 +33,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $player['max-mana'] = $player['mana'];
         $opponent['max-mana'] = $opponent['mana'];
 
-        $_SESSION['isEnded'] = false;
         $isStarted = true;
         unset($battleLog);
         $battleLog = [];
     } elseif (
-        isset($_POST['attaque']) && !$_SESSION['isEnded']
+        isset($_POST['attaque'])
     ) {
         // Lors d'une attaque, si le combat est toujours en cours, on baisse les vies des combattants puis on check si KO
 
@@ -68,7 +60,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $batteLog[] = "Les deux combattantes tombent 😧 ! Égalité !";
             $winner = 3;
         }
-    } elseif (isset($_POST['soin']) && !$_SESSION['isEnded']) {
+    } elseif (isset($_POST['soin'])) {
         // Lors d'un soin, si le combat est toujours en cours, on échange de la mana pour du soin
         if ($player['sante'] < $player['max-health']) {
             heal($player, 20);
@@ -87,7 +79,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 }
 
 if ($winner) {
-    $_SESSION['isEnded'] = true;
     switch ($winner) {
         case 1:
             $result = $player['name'] . " est le vainqueur !";
@@ -132,15 +123,15 @@ if ($winner) {
                             </div>
                             <div class="col-6">
                                 <label class="form-label">Attaque</label>
-                                <input required type="number" class="form-control" value="25" name="player[attaque]">
+                                <input required type="number" class="form-control" value="<?php echo $player['attaque'] ?? 25; ?>" name="player[attaque]">
                             </div>
                             <div class="col-6">
                                 <label class="form-label">Mana</label>
-                                <input required type="number" class="form-control" value="100" name="player[mana]">
+                                <input required type="number" class="form-control" value="<?php echo $player['mana'] ?? 100; ?>" name="player[mana]">
                             </div>
                             <div class="col-6">
                                 <label class="form-label">Santé</label>
-                                <input required type="number" class="form-control" value="150" name="player[sante]">
+                                <input required type="number" class="form-control" value="<?php echo $player['sante'] ?? 150; ?>" name="player[sante]">
                             </div>
                         </div>
                     </div>
@@ -154,15 +145,15 @@ if ($winner) {
                             </div>
                             <div class="col-6">
                                 <label class="form-label">Attaque</label>
-                                <input required type="number" class="form-control" value="20" name="adversaire[attaque]">
+                                <input required type="number" class="form-control" value="<?php echo $opponent['attaque'] ?? 20; ?>" name="adversaire[attaque]">
                             </div>
                             <div class="col-6">
                                 <label class="form-label">Mana</label>
-                                <input required type="number" class="form-control" value="100" name="adversaire[mana]">
+                                <input required type="number" class="form-control" value="<?php echo $opponent['mana'] ?? 100; ?>" name="adversaire[mana]">
                             </div>
                             <div class="col-6">
                                 <label class="form-label">Santé</label>
-                                <input required type="number" class="form-control" value="200" name="adversaire[sante]">
+                                <input required type="number" class="form-control" value="<?php echo $opponent['sante'] ?? 200; ?>" name="adversaire[sante]">
                             </div>
                         </div>
                     </div>
