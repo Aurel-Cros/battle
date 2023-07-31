@@ -2,6 +2,16 @@
 session_start();
 require_once __DIR__ . '/vendor/autoload.php';
 
+if (isset($_POST['restart'])) {
+    // Lors du restart, on vide le battlelog, et on réinitialise les variables
+    unset($_SESSION['battleLog']);
+    unset($_SESSION['player']);
+    unset($_SESSION['opponent']);
+
+    $_SESSION['isEnded'] = false;
+    $_SESSION['isStarted'] = false;
+}
+$isStarted = $_SESSION['isStarted'] ?? false;
 $player = $_SESSION['player'] ?? [];
 $opponent = $_SESSION['opponent'] ?? [];
 $battleLog = $_SESSION['battleLog'] ?? [];
@@ -31,19 +41,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $opponent['max-mana'] = $opponent['mana'];
 
         $_SESSION['isEnded'] = false;
+        $isStarted = true;
         unset($battleLog);
         $battleLog = [];
-    } elseif (isset($_POST['restart'])) {
-        // Lors du restart, on vide le battlelog, et on réinitialise les variables
-        unset($battleLog);
-        $battleLog = [];
-        $player['sante'] = $player['max-health'];
-        $player['mana'] = $player['max-mana'];
-        $opponent['sante'] = $opponent['max-health'];
-        $opponent['mana'] = $opponent['max-mana'];
-
-        $winner = null;
-        $_SESSION['isEnded'] = false;
     } elseif (
         isset($_POST['attaque']) && !$_SESSION['isEnded']
     ) {
@@ -83,6 +83,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $_SESSION['player'] = $player;
     $_SESSION['opponent'] = $opponent;
     $_SESSION['battleLog'] = $battleLog;
+    $_SESSION['isStarted'] = $isStarted;
 }
 
 if ($winner) {
@@ -118,129 +119,135 @@ if ($winner) {
         <audio id="hadoudken-song" src="Haduken.mp3"></audio>
         <audio id="fatality-song" src="fatality.mp3"></audio>
         <h1 class="animate__animated animate__rubberBand">Battle</h1>
-        <div id="prematch">
-            <form id='formFight' action="index.php" method="post">
-                <div>
-                    Joueur <br>
-                    <div class="row">
-                        <div class="col-6">
-                            <label class="form-label">Name</label>
-                            <input required type="text" class="form-control" name="player[name]" value="<?php echo $player['name'] ?? null; ?>">
-                        </div>
-                        <div class="col-6">
-                            <label class="form-label">Attaque</label>
-                            <input required type="number" class="form-control" value="25" name="player[attaque]">
-                        </div>
-                        <div class="col-6">
-                            <label class="form-label">Mana</label>
-                            <input required type="number" class="form-control" value="100" name="player[mana]">
-                        </div>
-                        <div class="col-6">
-                            <label class="form-label">Santé</label>
-                            <input required type="number" class="form-control" value="150" name="player[sante]">
-                        </div>
-                    </div>
-                </div>
-                <hr>
-                <div>
-                    Adversaire <br>
-                    <div class="row">
-                        <div class="col-6">
-                            <label class="form-label">Name</label>
-                            <input required type="text" class="form-control" name="adversaire[name]" value="<?php echo $opponent['name'] ?? null; ?>">
-                        </div>
-                        <div class="col-6">
-                            <label class="form-label">Attaque</label>
-                            <input required type="number" class="form-control" value="20" name="adversaire[attaque]">
-                        </div>
-                        <div class="col-6">
-                            <label class="form-label">Mana</label>
-                            <input required type="number" class="form-control" value="100" name="adversaire[mana]">
-                        </div>
-                        <div class="col-6">
-                            <label class="form-label">Santé</label>
-                            <input required type="number" class="form-control" value="200" name="adversaire[sante]">
+        <?php if (!$isStarted) {
+        ?>
+            <div id="prematch">
+                <form id='formFight' action="index.php" method="post">
+                    <div>
+                        Joueur <br>
+                        <div class="row">
+                            <div class="col-6">
+                                <label class="form-label">Name</label>
+                                <input required type="text" class="form-control" name="player[name]" value="<?php echo $player['name'] ?? null; ?>">
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label">Attaque</label>
+                                <input required type="number" class="form-control" value="25" name="player[attaque]">
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label">Mana</label>
+                                <input required type="number" class="form-control" value="100" name="player[mana]">
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label">Santé</label>
+                                <input required type="number" class="form-control" value="150" name="player[sante]">
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="row mt-2">
-                    <div class="d-flex justify-content-center">
-                        <input id="fight" type="submit" value="FIGHT">
+                    <hr>
+                    <div>
+                        Adversaire <br>
+                        <div class="row">
+                            <div class="col-6">
+                                <label class="form-label">Name</label>
+                                <input required type="text" class="form-control" name="adversaire[name]" value="<?php echo $opponent['name'] ?? null; ?>">
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label">Attaque</label>
+                                <input required type="number" class="form-control" value="20" name="adversaire[attaque]">
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label">Mana</label>
+                                <input required type="number" class="form-control" value="100" name="adversaire[mana]">
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label">Santé</label>
+                                <input required type="number" class="form-control" value="200" name="adversaire[sante]">
+                            </div>
+                        </div>
                     </div>
-                </div>
-            </form>
-        </div>
-        <div id="match" class="row gx-5">
-            <h2>Match</h2>
-            <div class="col-6 ">
-                <div class="position-relative float-end">
-                    <img id="player" src="https://api.dicebear.com/6.x/lorelei/svg?flip=false&seed=<?php echo $player['name']; ?>" alt="Avatar" class="avatar float-end mt-2">
-
-                    <span style="width:200%;" class="position-absolute top-0 end-0 translate-middle-y badge rounded-pill bg-transparent border border-2 border-danger">
-                         
-                    </span>
-
-                    <span style="width: <?php echo 200 * $player['sante'] / $player['max-health']; ?>%;" class="position-absolute top-0 end-0 translate-middle-y badge rounded-pill bg-danger">
-                        <?php echo $player['sante'] . " / " . $player['max-health']; ?>
-                    </span>
-                    <ul>
-                        <li>Name : <?php echo $player['name']; ?></li>
-                        <li>Attaque : <?php echo $player['attaque']; ?></li>
-                        <li>Mana : <?php echo $player['mana']; ?></li>
-                    </ul>
-                </div>
-            </div>
-            <div class="col-6" id="adversaire">
-                <div class="position-relative float-start">
-                    <img src="https://api.dicebear.com/6.x/lorelei/svg?flip=true&seed=<?php echo $opponent['name']; ?>" alt="Avatar" class="avatar mt-2">
-
-                    <span style="width: 200%;" class="position-absolute top-0 start-0 translate-middle-y badge rounded-pill bg-transparent border border-2 border-danger">
-                         
-                    </span>
-
-                    <span style="width: <?php echo 200 * $opponent['sante'] / $opponent['max-health']; ?>%;" class="position-absolute top-0 start-0 translate-middle-y badge rounded-pill bg-danger">
-                        <?php echo $opponent['sante'] . " / " . $opponent['max-health']; ?>
-                    </span>
-                    <ul>
-                        <li>Name : <?php echo $opponent['name']; ?></li>
-                        <li>Attaque : <?php echo $opponent['attaque']; ?></li>
-                        <li>Mana : <?php echo $opponent['mana']; ?></li>
-                    </ul>
-                </div>
-            </div>
-            <?php if (isset($result)) {
-            ?>
-                <div id="Resultats">
-                    <h1>Résultat</h1>
-                    <?php echo $result; ?>
-                    <form class="d-flex justify-content-center" action="" method="post">
-                        <input name="restart" type="submit" value="Nouveau combat">
-                    </form>
-                </div>
-            <?php
-            } else {
-            ?>
-                <div id="combats">
-                    <h2>Combat</h2>
-                    <form id='actionForm' action="index.php" method="post">
+                    <div class="row mt-2">
                         <div class="d-flex justify-content-center">
-                            <input id="attaque" name="attaque" type="submit" value="Attaquer">
-                            <input name="soin" type="submit" value="Se soigner">
+                            <input id="fight" type="submit" value="FIGHT">
                         </div>
-                        <div class="d-flex justify-content-center">
-                            <input id="restart" name="restart" type="submit" value="Stopper le combat">
-                        </div>
-                    </form>
-                    <ul class="battleLog">
-                        <?php foreach ($battleLog as $line) {
-                            echo "<li>$line</li>";
-                        }; ?>
-                    </ul>
+                    </div>
+                </form>
+            </div>
+        <?php } else {
+        ?>
+            <div id="match" class="row gx-5">
+                <h2>Match</h2>
+                <div class="col-6 ">
+                    <div class="position-relative float-end">
+                        <img id="player" src="https://api.dicebear.com/6.x/lorelei/svg?flip=false&seed=<?php echo $player['name'] ?? 'john'; ?>" alt="Avatar" class="avatar float-end mt-2">
+
+                        <span style="width:200%;" class="position-absolute top-0 end-0 translate-middle-y badge rounded-pill bg-transparent border border-2 border-danger">
+                             
+                        </span>
+
+                        <span style="width: <?php echo 200 * $player['sante'] / $player['max-health']; ?>%;" class="position-absolute top-0 end-0 translate-middle-y badge rounded-pill bg-danger">
+                            <?php echo $player['sante'] . " / " . $player['max-health']; ?>
+                        </span>
+                        <ul>
+                            <li>Name : <?php echo $player['name']; ?></li>
+                            <li>Attaque : <?php echo $player['attaque']; ?></li>
+                            <li>Mana : <?php echo $player['mana']; ?></li>
+                        </ul>
+                    </div>
                 </div>
-            <?php
-            }
-            ?>
-        </div>
+                <div class="col-6" id="adversaire">
+                    <div class="position-relative float-start">
+                        <img src="https://api.dicebear.com/6.x/lorelei/svg?flip=true&seed=<?php echo $opponent['name'] ?? 'jane'; ?>" alt="Avatar" class="avatar mt-2">
+
+                        <span style="width: 200%;" class="position-absolute top-0 start-0 translate-middle-y badge rounded-pill bg-transparent border border-2 border-danger">
+                             
+                        </span>
+
+                        <span style="width: <?php echo 200 * $opponent['sante'] / $opponent['max-health']; ?>%;" class="position-absolute top-0 start-0 translate-middle-y badge rounded-pill bg-danger">
+                            <?php echo $opponent['sante'] . " / " . $opponent['max-health']; ?>
+                        </span>
+                        <ul>
+                            <li>Name : <?php echo $opponent['name']; ?></li>
+                            <li>Attaque : <?php echo $opponent['attaque']; ?></li>
+                            <li>Mana : <?php echo $opponent['mana']; ?></li>
+                        </ul>
+                    </div>
+                </div>
+                <?php if (isset($result)) {
+                ?>
+                    <div id="Resultats">
+                        <h1>Résultat</h1>
+                        <?php echo $result; ?>
+                        <form class="d-flex justify-content-center" action="" method="post">
+                            <input name="restart" type="submit" value="Nouveau combat">
+                        </form>
+                    </div>
+                <?php
+                } else {
+                ?>
+                    <div id="combats">
+                        <h2>Combat</h2>
+                        <form id='actionForm' action="index.php" method="post">
+                            <div class="d-flex justify-content-center">
+                                <input id="attaque" name="attaque" type="submit" value="Attaquer">
+                                <input name="soin" type="submit" value="Se soigner">
+                            </div>
+                            <div class="d-flex justify-content-center">
+                                <input id="restart" name="restart" type="submit" value="Stopper le combat">
+                            </div>
+                        </form>
+                        <ul class="battleLog">
+                            <?php foreach ($battleLog as $line) {
+                                echo "<li>$line</li>";
+                            }; ?>
+                        </ul>
+                    </div>
+                <?php
+                }
+                ?>
+            </div>
+        <?php
+        } ?>
     </div>
     <script>
         document.addEventListener("DOMContentLoaded", function() {
