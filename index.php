@@ -6,13 +6,15 @@ require_once './utils.php';
 if (isset($_POST['restart'])) {
     // Lors du restart, on vide le battlelog, et on réinitialise les variables
     unset($_SESSION['battleLog']);
-    $_SESSION['player']['sante'] = $_SESSION['player']['max-health'];
+    $_SESSION['player']['health'] = $_SESSION['player']['max-health'];
     $_SESSION['player']['mana'] = $_SESSION['player']['max-mana'];
 
-    $_SESSION['opponent']['sante'] = $_SESSION['opponent']['max-health'];
+    $_SESSION['opponent']['health'] = $_SESSION['opponent']['max-health'];
     $_SESSION['opponent']['mana'] = $_SESSION['opponent']['max-mana'];
 
     $_SESSION['isStarted'] = false;
+
+    header('Location: ./'); // Parce que j'en ai marre de renvoyer du POST inutilement à chaque refresh
 }
 $isStarted = $_SESSION['isStarted'] ?? false;
 $player = $_SESSION['player'] ?? [];
@@ -28,45 +30,49 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $player = $_POST['player'];
         $opponent = $_POST['adversaire'];
 
-        $player['max-health'] = $player['sante'];
-        $opponent['max-health'] = $opponent['sante'];
-        $player['max-mana'] = $player['mana'];
-        $opponent['max-mana'] = $opponent['mana'];
+        $allowStart = areInputsValid($player, $opponent);
 
-        $isStarted = true;
-        unset($battleLog);
-        $battleLog = [];
+        if ($allowStart) {
+            $player['max-health'] = $player['health'];
+            $opponent['max-health'] = $opponent['health'];
+            $player['max-mana'] = $player['mana'];
+            $opponent['max-mana'] = $opponent['mana'];
+
+            $isStarted = true;
+        } else {
+            $errors = getInputErrors($player, $opponent);
+        }
     } elseif (
-        isset($_POST['attaque'])
+        isset($_POST['attack'])
     ) {
-        // Lors d'une attaque, si le combat est toujours en cours, on baisse les vies des combattants puis on check si KO
+        // Lors d'une attack, si le combat est toujours en cours, on baisse les vies des combattants puis on check si KO
 
-        $opponent['sante'] = max(0, $opponent['sante'] - $player['attaque']);
-        $player['sante'] = max(0, $player['sante'] - $opponent['attaque']);
+        $opponent['health'] = max(0, $opponent['health'] - $player['attack']);
+        $player['health'] = max(0, $player['health'] - $opponent['attack']);
 
-        $battleLog[] = $player['name'] . " attaque ! " . $opponent['name'] . " perd " . $player['attaque'] . " points de vie !";
-        $battleLog[] = $opponent['name'] . " riposte ! " . $player['name'] . " perd " . $opponent['attaque'] . " points de vie !";
+        $battleLog[] = $player['name'] . " attack ! " . $opponent['name'] . " perd " . $player['attack'] . " points de vie !";
+        $battleLog[] = $opponent['name'] . " riposte ! " . $player['name'] . " perd " . $opponent['attack'] . " points de vie !";
 
-        if ($opponent['sante'] <= 0 && $player['sante'] > 0) {
+        if ($opponent['health'] <= 0 && $player['health'] > 0) {
             // Player wins
             $batteLog[] = $opponent['name'] . " défaillit ! " . $player['name'] . " a remporté le combat !";
             $winner = 1;
-        } elseif ($opponent['sante'] > 0 && $player['sante'] <= 0) {
+        } elseif ($opponent['health'] > 0 && $player['health'] <= 0) {
             // AI wins
             $batteLog[] = $player['name'] . " défaillit ! " . $opponent['name'] . " a remporté le combat !";
             $winner = 2;
-        } elseif ($opponent['sante'] <= 0 && $player['sante'] <= 0) {
+        } elseif ($opponent['health'] <= 0 && $player['health'] <= 0) {
             // Draw
             $batteLog[] = "Les deux combattantes tombent 😧 ! Égalité !";
             $winner = 3;
         }
     } elseif (isset($_POST['soin'])) {
         // Lors d'un soin, si le combat est toujours en cours, on échange de la mana pour du soin
-        if ($player['sante'] < $player['max-health']) {
+        if ($player['health'] < $player['max-health']) {
             heal($player, 20);
             $battleLog[] = $player['name'] . " se soigne ! ";
         }
-        if ($opponent['sante'] < $opponent['max-health']) {
+        if ($opponent['health'] < $opponent['max-health']) {
             heal($opponent, 15);
             $battleLog[] = $opponent['name'] . " en profite pour bander ses plaies également !";
         }
@@ -113,25 +119,41 @@ if ($winner) {
         <?php if (!$isStarted) {
         ?>
             <div id="prematch">
-                <form id='formFight' action="index.php" method="post">
+                <?php if (isset($errors)) {
+                ?>
+                    <ul>
+                        <?php
+                        foreach ($errors['ErrorsList'] as $error) {
+                        ?>
+                            <li class="text-danger"><?php echo $error; ?></li>
+                        <?php
+                        }
+                        ?>
+                    </ul>
+                <?php
+                }
+                ?>
+                <form id='formFight' action=" index.php" method="post" class="needs-validation" novalidate>
                     <div>
                         Joueur <br>
                         <div class="row">
                             <div class="col-6">
                                 <label class="form-label">Name</label>
-                                <input required type="text" class="form-control" name="player[name]" value="<?php echo $player['name'] ?? null; ?>">
+                                <input required type="text" class="form-control<?php if (isset($errors['player-name-empty'])) echo ' is-invalid'; ?>" name="player[name]" value="<?php echo $player['name'] ?? null; ?>">
                             </div>
                             <div class="col-6">
                                 <label class="form-label">Attaque</label>
-                                <input required type="number" class="form-control" value="<?php echo $player['attaque'] ?? 25; ?>" name="player[attaque]">
+                                <input required type="number" class="form-control<?php if (isset($errors['player-attack-invalid'])) echo ' is-invalid'; ?>" value="<?php echo $player['attack'] ?? 25; ?>" name="player[attack]">
                             </div>
                             <div class="col-6">
                                 <label class="form-label">Mana</label>
-                                <input required type="number" class="form-control" value="<?php echo $player['mana'] ?? 100; ?>" name="player[mana]">
+                                <input required type="number" class="form-control<?php
+                                                                                    if (isset($errors['player-mana-invalid'])) echo ' is-invalid'; ?>" value="<?php echo $player['mana'] ?? 100; ?>" name="player[mana]">
                             </div>
                             <div class="col-6">
                                 <label class="form-label">Santé</label>
-                                <input required type="number" class="form-control" value="<?php echo $player['sante'] ?? 150; ?>" name="player[sante]">
+                                <input required type="number" class="form-control<?php
+                                                                                    if (isset($errors['player-health-invalid'])) echo ' is-invalid'; ?>" value="<?php echo $player['health'] ?? 150; ?>" name="player[health]">
                             </div>
                         </div>
                     </div>
@@ -141,19 +163,21 @@ if ($winner) {
                         <div class="row">
                             <div class="col-6">
                                 <label class="form-label">Name</label>
-                                <input required type="text" class="form-control" name="adversaire[name]" value="<?php echo $opponent['name'] ?? null; ?>">
+                                <input required type="text" class="form-control<?php
+                                                                                if (isset($errors['opponent-name-empty'])) echo ' is-invalid'; ?>" name="adversaire[name]" value="<?php echo $opponent['name'] ?? null; ?>">
                             </div>
                             <div class="col-6">
-                                <label class="form-label">Attaque</label>
-                                <input required type="number" class="form-control" value="<?php echo $opponent['attaque'] ?? 20; ?>" name="adversaire[attaque]">
+                                <label class="form-label">attack</label>
+                                <input required type="number" class="form-control<?php if (isset($errors['opponent-attack-invalid'])) echo ' is-invalid'; ?>" value="<?php echo $opponent['attack'] ?? 20; ?>" name="adversaire[attack]">
                             </div>
                             <div class="col-6">
                                 <label class="form-label">Mana</label>
-                                <input required type="number" class="form-control" value="<?php echo $opponent['mana'] ?? 100; ?>" name="adversaire[mana]">
+                                <input required type="number" class="form-control<?php if (isset($errors['opponent-mana-invalid'])) echo ' is-invalid'; ?>" value="<?php echo $opponent['mana'] ?? 100; ?>" name="adversaire[mana]">
                             </div>
                             <div class="col-6">
                                 <label class="form-label">Santé</label>
-                                <input required type="number" class="form-control" value="<?php echo $opponent['sante'] ?? 200; ?>" name="adversaire[sante]">
+                                <input required type="number" class="form-control<?php
+                                                                                    if (isset($errors['opponent-health-invalid'])) echo ' is-invalid'; ?>" value="<?php echo $opponent['health'] ?? 200; ?>" name="adversaire[health]">
                             </div>
                         </div>
                     </div>
@@ -176,12 +200,12 @@ if ($winner) {
                              
                         </span>
 
-                        <span style="width: <?php echo 200 * $player['sante'] / $player['max-health']; ?>%;" class="position-absolute top-0 end-0 translate-middle-y badge rounded-pill bg-danger">
-                            <?php echo $player['sante'] . " / " . $player['max-health']; ?>
+                        <span style="width: <?php echo 200 * $player['health'] / $player['max-health']; ?>%;" class="position-absolute top-0 end-0 translate-middle-y badge rounded-pill bg-danger">
+                            <?php echo $player['health'] . " / " . $player['max-health']; ?>
                         </span>
                         <ul>
                             <li>Name : <?php echo $player['name']; ?></li>
-                            <li>Attaque : <?php echo $player['attaque']; ?></li>
+                            <li>attack : <?php echo $player['attack']; ?></li>
                             <li>Mana : <?php echo $player['mana']; ?></li>
                         </ul>
                     </div>
@@ -194,12 +218,12 @@ if ($winner) {
                              
                         </span>
 
-                        <span style="width: <?php echo 200 * $opponent['sante'] / $opponent['max-health']; ?>%;" class="position-absolute top-0 start-0 translate-middle-y badge rounded-pill bg-danger">
-                            <?php echo $opponent['sante'] . " / " . $opponent['max-health']; ?>
+                        <span style="width: <?php echo 200 * $opponent['health'] / $opponent['max-health']; ?>%;" class="position-absolute top-0 start-0 translate-middle-y badge rounded-pill bg-danger">
+                            <?php echo $opponent['health'] . " / " . $opponent['max-health']; ?>
                         </span>
                         <ul>
                             <li>Name : <?php echo $opponent['name']; ?></li>
-                            <li>Attaque : <?php echo $opponent['attaque']; ?></li>
+                            <li>attack : <?php echo $opponent['attack']; ?></li>
                             <li>Mana : <?php echo $opponent['mana']; ?></li>
                         </ul>
                     </div>
@@ -220,7 +244,7 @@ if ($winner) {
                         <h2>Combat</h2>
                         <form id='actionForm' action="index.php" method="post">
                             <div class="d-flex justify-content-center">
-                                <input id="attaque" name="attaque" type="submit" value="Attaquer">
+                                <input id="attack" name="attack" type="submit" value="Attaquer">
                                 <input name="soin" type="submit" value="Se soigner">
                             </div>
                             <div class="d-flex justify-content-center">
@@ -259,27 +283,27 @@ if ($winner) {
                 })
             }
 
-            let submitAttaque = document.querySelector("#attaque");
+            let submitattack = document.querySelector("#attack");
             let alreadyPlaySong = false;
-            if (submitAttaque) {
-                submitAttaque.addEventListener("click", function(event) {
+            if (submitattack) {
+                submitattack.addEventListener("click", function(event) {
                     if (alreadyPlaySong)
                         return true;
                     event.preventDefault();
                     let player = document.querySelector("#player")
                     player.classList.add("animate__animated");
                     player.classList.add("animate__rubberBand");
-                    submitAttaque.classList.add("animate__animated");
-                    submitAttaque.classList.add("animate__rubberBand");
+                    submitattack.classList.add("animate__animated");
+                    submitattack.classList.add("animate__rubberBand");
                     setTimeout(function() {
-                        submitAttaque.classList.remove("animate__rubberBand");
+                        submitattack.classList.remove("animate__rubberBand");
                         player.classList.remove("animate__rubberBand");
                     }, 1000);
                     let hadouken_song = document.getElementById("hadoudken-song");
                     hadouken_song.play();
                     alreadyPlaySong = true;
                     setTimeout(function() {
-                        submitAttaque.click();
+                        submitattack.click();
                     }, 1000);
                 })
             }
