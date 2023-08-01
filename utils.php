@@ -8,14 +8,14 @@
  * @param int $amount
  * @return int
  */
-function heal(array &$john): int
+function heal(array &$john): int | bool
 {
-    if ($john['mana'] >= $john['healing-ratio']) {
-        $john['mana'] -= $john['healing-ratio'];
-        $john['health'] = round(min($john['max-health'], $john['health'] + $john['max-health'] * $john['healing-ratio'] / 100));
-        return $john['healing-ratio'];
+    if ($john['mana'] >= $john['healRatio']) {
+        $john['mana'] -= $john['healRatio'];
+        $john['health'] = round(min($john['maxHealth'], $john['health'] + $john['maxHealth'] * $john['healRatio'] / 100));
+        return $john['healRatio'];
     } else
-        return 0;
+        return false;
 }
 
 function areInputsValid(array $player, array $opponent): bool

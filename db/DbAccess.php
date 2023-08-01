@@ -3,28 +3,19 @@ class DbAccess
 {
 
     /**
-     * @var DbAccess
+     * @var ?PDO
      * @access private
      * @static
      */
     private static $instance = null;
 
-    /**
-     * Constructeur de la classe
-     *
-     * @param void
-     * @return void
-     */
-    private function __construct()
-    {
-    }
 
     /**
      * Méthode qui crée l'unique instance de la classe
      * si elle n'existe pas encore puis la retourne.
      *
      * @param void
-     * @return DbAccess
+     * @return PDO
      */
     public static function getInstance(): PDO
     {

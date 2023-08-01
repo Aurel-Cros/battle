@@ -1,0 +1,13 @@
+.avatar {
+    vertical-align: middle;
+    width: 100px;
+    border-radius: 50%;
+}
+input[type=submit] {
+    font-weight: 700;
+    letter-spacing: 0.1rem;
+}
+input:read-only, input:read-only:focus {
+    background-color: #eee;
+    cursor: not-allowed;
+}
