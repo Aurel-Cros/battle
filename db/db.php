@@ -17,7 +17,7 @@ function insertFighter(array $fighter): void
 {
     $pdo = DbAccess::getInstance();
 
-    $name = $fighter['name'];
+    $name = str_replace(' ', ' ', $fighter['name']);
     $health = $fighter['health'];
     $attack = $fighter['attack'];
     $mana = $fighter['mana'];
