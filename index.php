@@ -2,6 +2,7 @@
 session_start();
 require_once __DIR__ . '/vendor/autoload.php';
 require_once './utils.php';
+require_once './db/db.php';
 
 if (isset($_POST['restart'])) {
     // Lors du restart, on vide le battlelog, et on réinitialise les variables
