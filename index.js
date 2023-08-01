@@ -1,14 +1,19 @@
+const AUDIO_DIR = './';
+
 const submitFight = document.querySelector("#fight");
 if (submitFight) {
     submitFight.addEventListener("click", function (event) {
         event.preventDefault();
+
         submitFight.classList.add("animate__animated");
         submitFight.classList.add("animate__rubberBand");
         setTimeout(function () {
             submitFight.classList.remove("animate__rubberBand");
         }, 1000);
-        let fight_song = document.getElementById("fight-song");
+
+        const fight_song = new Audio(AUDIO_DIR + 'fight.mp3');
         fight_song.play();
+
         setTimeout(function () {
             document.forms["formFight"].submit();
         }, 500);
@@ -22,7 +27,8 @@ if (submitattack) {
         if (alreadyPlaySong)
             return true;
         event.preventDefault();
-        let player = document.querySelector("#player")
+
+        const player = document.querySelector("#player")
         player.classList.add("animate__animated");
         player.classList.add("animate__rubberBand");
         submitattack.classList.add("animate__animated");
@@ -31,9 +37,11 @@ if (submitattack) {
             submitattack.classList.remove("animate__rubberBand");
             player.classList.remove("animate__rubberBand");
         }, 1000);
-        let hadouken_song = document.getElementById("hadoudken-song");
+
+        const hadouken_song = new Audio(AUDIO_DIR + 'Haduken.mp3');
         hadouken_song.play();
         alreadyPlaySong = true;
+
         setTimeout(function () {
             submitattack.click();
         }, 1000);
@@ -47,9 +55,11 @@ if (submitRestart) {
         if (alreadyPlaySongRestart)
             return true;
         event.preventDefault();
-        let fatality_song = document.getElementById("fatality-song");
+
+        const fatality_song = new Audio(AUDIO_DIR + 'fatality.mp3');
         fatality_song.play();
         alreadyPlaySongRestart = true;
+
         setTimeout(function () {
             submitRestart.click();
         }, 2000);
@@ -58,6 +68,7 @@ if (submitRestart) {
 
 document.querySelector(".fighter1Select").addEventListener("change", (e) => {
     if (!e.target.value) {
+        document.querySelector("input[name='player[id]']").value = '';
         document.querySelector("input[name='player[name]']").readOnly = false;
         document.querySelector("input[name='player[attack]']").readOnly = false;
         document.querySelector("input[name='player[health]']").readOnly = false;
@@ -78,6 +89,7 @@ document.querySelector(".fighter1Select").addEventListener("change", (e) => {
 });
 document.querySelector(".fighter2Select").addEventListener("change", (e) => {
     if (!e.target.value) {
+        document.querySelector("input[name='opponent[id]']").value = '';
         document.querySelector("input[name='opponent[name]']").readOnly = false;
         document.querySelector("input[name='opponent[attack]']").readOnly = false;
         document.querySelector("input[name='opponent[health]']").readOnly = false;

@@ -133,9 +133,6 @@ if ($winner) {
 
 <body>
     <div class="container">
-        <audio id="fight-song" src="fight.mp3"></audio>
-        <audio id="hadoudken-song" src="Haduken.mp3"></audio>
-        <audio id="fatality-song" src="fatality.mp3"></audio>
         <h1 class="display-1 animate__animated animate__rubberBand">Battle</h1>
         <?php if (!$isStarted) {
         ?>
@@ -154,18 +151,21 @@ if ($winner) {
                 <?php
                 }
                 ?>
-                <form id='formFight' action=" index.php" method="post" class="needs-validation" novalidate>
+                <form id='formFight' action="index.php" method="post" class="needs-validation" novalidate>
                     <div class="mb-5">
                         <p class="mb-1 display-6">Joueur</p>
-                        <input type="hidden" name="player[id]" value="">
+                        <input type="hidden" name="player[id]" value="<?php echo $player['id'] ?? ''; ?>">
                         <label class="w-50">Choisir un combattant déjà existant :
                             <select class="fighter1Select form-select">
-                                <option selected value></option>
+                                <option value></option>
                                 <?php
                                 foreach ($fightersList as $fighter) {
                                     $stats = json_encode($fighter);
                                 ?>
-                                    <option value=<?php echo $stats; ?>><?php echo $fighter['name']; ?></option>
+                                    <option <?php if (isset($player['id']) && $player['id'] == $fighter['id']) {
+                                                echo 'selected ';
+                                                $playerSelected = " readOnly=true ";
+                                            } ?> value=<?php echo $stats; ?>><?php echo $fighter['name']; ?></option>
                                 <?php
                                 }
                                 ?>
@@ -174,35 +174,40 @@ if ($winner) {
                         <div class="row">
                             <div class="col-6">
                                 <label class="form-label">Name</label>
-                                <input required type="text" class="form-control<?php if (isset($errors['player-name-empty'])) echo ' is-invalid'; ?>" name="player[name]" value="<?php echo $player['name'] ?? null; ?>">
+                                <input required type="text" class="form-control<?php if (isset($errors['player-name-empty'])) echo ' is-invalid'; ?>" name="player[name]" value="<?php echo $player['name'] ?? null; ?>" <?php echo $playerSelected ?? ''; ?>>
                             </div>
                             <div class="col-6">
                                 <label class="form-label">Attaque</label>
-                                <input required type="number" class="form-control<?php if (isset($errors['player-attack-invalid'])) echo ' is-invalid'; ?>" value="<?php echo $player['attack'] ?? 25; ?>" name="player[attack]">
+                                <input required type="number" class="form-control<?php if (isset($errors['player-attack-invalid'])) echo ' is-invalid'; ?>" value="<?php echo $player['attack'] ?? 25; ?>" name="player[attack]" <?php echo $playerSelected ?? ''; ?>>
                             </div>
                             <div class="col-6">
                                 <label class="form-label">Mana</label>
                                 <input required type="number" class="form-control<?php
-                                                                                    if (isset($errors['player-mana-invalid'])) echo ' is-invalid'; ?>" value="<?php echo $player['mana'] ?? 100; ?>" name="player[mana]">
+                                                                                    if (isset($errors['player-mana-invalid'])) echo ' is-invalid'; ?>" value="<?php echo $player['mana'] ?? 100; ?>" name="player[mana]" <?php echo $playerSelected ?? ''; ?>>
                             </div>
                             <div class="col-6">
                                 <label class="form-label">Santé</label>
                                 <input required type="number" class="form-control<?php
-                                                                                    if (isset($errors['player-health-invalid'])) echo ' is-invalid'; ?>" value="<?php echo $player['health'] ?? 150; ?>" name="player[health]">
+                                                                                    if (isset($errors['player-health-invalid'])) echo ' is-invalid'; ?>" value="<?php echo $player['health'] ?? 150; ?>" name="player[health]" <?php echo $playerSelected ?? ''; ?>>
                             </div>
                         </div>
                     </div>
                     <div class="mb-5">
                         <p class="mb-1 display-6">Adversaire</p>
-                        <input type="hidden" name="opponent[id]" value="">
+                        <input type="hidden" name="opponent[id]" value="<?php echo $opponent['id'] ?? ''; ?>">
                         <label class="w-50">Choisir un combattant déjà existant :
                             <select class="fighter2Select form-select">
-                                <option selected value></option>
+                                <option value></option>
                                 <?php
                                 foreach ($fightersList as $fighter) {
                                     $stats = json_encode($fighter);
                                 ?>
-                                    <option value=<?php echo $stats; ?>><?php echo $fighter['name']; ?></option>
+                                    <option <?php
+                                            if (isset($opponent['id']) && $opponent['id'] == $fighter['id']) {
+                                                echo 'selected';
+                                                $opponentSelected = " readOnly=true ";
+                                            }
+                                            ?> value=<?php echo $stats; ?>><?php echo $fighter['name']; ?></option>
                                 <?php
                                 }
                                 ?>
@@ -212,20 +217,20 @@ if ($winner) {
                             <div class="col-6">
                                 <label class="form-label">Name</label>
                                 <input required type="text" class="form-control<?php
-                                                                                if (isset($errors['opponent-name-empty'])) echo ' is-invalid'; ?>" name="opponent[name]" value="<?php echo $opponent['name'] ?? null; ?>">
+                                                                                if (isset($errors['opponent-name-empty'])) echo ' is-invalid'; ?>" name="opponent[name]" value="<?php echo $opponent['name'] ?? null; ?>" <?php echo $opponentSelected ?? ''; ?>>
                             </div>
                             <div class="col-6">
-                                <label class="form-label">attack</label>
-                                <input required type="number" class="form-control<?php if (isset($errors['opponent-attack-invalid'])) echo ' is-invalid'; ?>" value="<?php echo $opponent['attack'] ?? 20; ?>" name="opponent[attack]">
+                                <label class="form-label">Attack</label>
+                                <input required type="number" class="form-control<?php if (isset($errors['opponent-attack-invalid'])) echo ' is-invalid'; ?>" value="<?php echo $opponent['attack'] ?? 20; ?>" name="opponent[attack]" <?php echo $opponentSelected ?? ''; ?>>
                             </div>
                             <div class="col-6">
                                 <label class="form-label">Mana</label>
-                                <input required type="number" class="form-control<?php if (isset($errors['opponent-mana-invalid'])) echo ' is-invalid'; ?>" value="<?php echo $opponent['mana'] ?? 100; ?>" name="opponent[mana]">
+                                <input required type="number" class="form-control<?php if (isset($errors['opponent-mana-invalid'])) echo ' is-invalid'; ?>" value="<?php echo $opponent['mana'] ?? 100; ?>" name="opponent[mana]" <?php echo $opponentSelected ?? ''; ?>>
                             </div>
                             <div class="col-6">
                                 <label class="form-label">Santé</label>
                                 <input required type="number" class="form-control<?php
-                                                                                    if (isset($errors['opponent-health-invalid'])) echo ' is-invalid'; ?>" value="<?php echo $opponent['health'] ?? 200; ?>" name="opponent[health]">
+                                                                                    if (isset($errors['opponent-health-invalid'])) echo ' is-invalid'; ?>" value="<?php echo $opponent['health'] ?? 200; ?>" name="opponent[health]" <?php echo $opponentSelected ?? ''; ?>>
                             </div>
                         </div>
                     </div>
