@@ -1,5 +1,16 @@
 <?php
 
+namespace App;
+
+class FilesManager
+{
+    public static function rootDirectory()
+    {
+        // Change the second parameter to suit your needs
+        return dirname(__FILE__, 2);
+    }
+}
+
 /**
  * Refills fighters "john"'s health by a percentage of their max health, and consumes that much mana in exchange.
  * Returns true if healing is applied, or false if mana is depleted.

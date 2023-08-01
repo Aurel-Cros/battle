@@ -1,16 +1,27 @@
 <?php
-require_once(__DIR__ . '/DbAccess.php');
+require_once('DbAccess.php');
 
 function getAllFighters(): array
 {
     $pdo = DbAccess::getInstance();
     try {
-        $fighters = $pdo->query("SELECT * FROM fighters ORDER BY id")->fetchAll();
+        $fighters = $pdo->query("SELECT * FROM fighters ORDER BY id")->fetchAll(PDO::FETCH_ASSOC);
     } catch (PDOException $e) {
         echo "Connection failed: " . $e->getMessage();
     }
 
     return $fighters;
+}
+
+function getFighter(int $id): array
+{
+    $pdo = DbAccess::getInstance();
+    try {
+        $fighter = $pdo->query("SELECT * FROM `fighters` WHERE id=$id")->fetch(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+        echo "Connection failed: " . $e->getMessage();
+    }
+    return $fighter;
 }
 
 function insertFighter(array $fighter): void

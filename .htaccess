@@ -1,0 +1,2 @@
+RewriteEngine On
+RewriteRule "^api/v1/fighters/([0-9]+)$" "api/v1/fighters/?id=$1"

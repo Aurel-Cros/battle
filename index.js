@@ -1,4 +1,4 @@
-const AUDIO_DIR = './';
+const AUDIO_DIR = './assets/audio/';
 
 const submitFight = document.querySelector("#fight");
 if (submitFight) {
