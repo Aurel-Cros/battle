@@ -16,9 +16,17 @@ function getAllFighters(): array
 function insertFighter(array $fighter): void
 {
     $pdo = DbAccess::getInstance();
+
+    $name = $fighter['name'];
+    $health = $fighter['health'];
+    $attack = $fighter['attack'];
+    $mana = $fighter['mana'];
+    $healR = $fighter['healRatio'];
+
     try {
-        $sql = "INSERT INTO users (name, health, attack, mana, healRatio) VALUES (:name, :health, :attack, :mana, :healRatio)";
-        $pdo->prepare($sql)->execute($fighter);
+        $sql = "INSERT INTO fighters (name, health, attack, mana, healRatio) VALUES (?,?,?,?,?)";
+        $pdo->prepare($sql)->execute([$name, $health, $attack, $mana, $healR]);
+        echo "Inserted $name in database.";
     } catch (PDOException $e) {
         echo "Connection failed: " . $e->getMessage();
     }

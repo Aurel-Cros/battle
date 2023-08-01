@@ -34,16 +34,21 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $allowStart = areInputsValid($player, $opponent);
 
         if ($allowStart) {
-            if (empty($player['id'])) {
-                // Fighter doesn't exist in database => add him to the roster
-                insertFighter($player);
-            }
             $player['maxHealth'] = $player['health'];
             $player['maxMana'] = $player['mana'];
             $player['healRatio'] = random_int(10, 30);
             $opponent['maxHealth'] = $opponent['health'];
             $opponent['maxMana'] = $opponent['mana'];
             $opponent['healRatio'] = random_int(10, 30);
+
+            if (empty($player['id'])) {
+                // Fighter doesn't exist in database => add him to the roster
+                insertFighter($player);
+            }
+            if (empty($opponent['id'])) {
+                // Fighter doesn't exist in database => add him to the roster
+                insertFighter($opponent);
+            }
 
             $isStarted = true;
         } else {
