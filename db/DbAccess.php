@@ -21,7 +21,7 @@ class DbAccess
     {
         if (is_null(self::$instance)) {
 
-            $dotenv = Dotenv\Dotenv::createImmutable(App\FilesManager::rootDirectory());
+            $dotenv = Dotenv\Dotenv::createImmutable(FilesManager::rootDirectory());
             $dotenv->load();
 
             $db_info = array(

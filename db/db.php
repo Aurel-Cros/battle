@@ -1,9 +1,10 @@
 <?php
 require_once('DbAccess.php');
 
+
 function getAllFighters(): array
 {
-    $pdo = DbAccess::getInstance();
+    $pdo = \DbAccess::getInstance();
     try {
         $fighters = $pdo->query("SELECT * FROM fighters ORDER BY id")->fetchAll(PDO::FETCH_ASSOC);
     } catch (PDOException $e) {
@@ -24,7 +25,10 @@ function getFighter(int $id): array
     return $fighter;
 }
 
-function insertFighter(array $fighter): void
+/**
+ * Insert a fighter in the database and returns the id of the new entry
+ */
+function insertFighter(array $fighter): int
 {
     $pdo = DbAccess::getInstance();
 
@@ -37,8 +41,9 @@ function insertFighter(array $fighter): void
     try {
         $sql = "INSERT INTO fighters (name, health, attack, mana, healRatio) VALUES (?,?,?,?,?)";
         $pdo->prepare($sql)->execute([$name, $health, $attack, $mana, $healR]);
-        echo "Inserted $name in database.";
+        $new = $pdo->lastInsertId('fighters');
     } catch (PDOException $e) {
         echo "Connection failed: " . $e->getMessage();
     }
+    return $new;
 }

@@ -1,7 +1,4 @@
 <?php
-
-namespace App;
-
 class FilesManager
 {
     public static function rootDirectory()
@@ -13,18 +10,16 @@ class FilesManager
 
 /**
  * Refills fighters "john"'s health by a percentage of their max health, and consumes that much mana in exchange.
- * Returns true if healing is applied, or false if mana is depleted.
- * 
- * @param array &$john
- * @param int $amount
- * @return int
+ * Returns the amount healed if healing is applied, or false if mana is depleted.
  */
 function heal(array &$john): int | bool
 {
     if ($john['mana'] >= $john['healRatio']) {
+        $startingHealth = $john['health'];
         $john['mana'] -= $john['healRatio'];
         $john['health'] = round(min($john['maxHealth'], $john['health'] + $john['maxHealth'] * $john['healRatio'] / 100));
-        return $john['healRatio'];
+        $diff = $john['health'] - $startingHealth;
+        return $diff;
     } else
         return false;
 }
