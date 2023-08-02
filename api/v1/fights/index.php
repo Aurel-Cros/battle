@@ -6,12 +6,12 @@ require_once($root . '/vendor/autoload.php');
 
 header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json; charset=UTF-8");
-header("Access-Control-Allow-Methods: GET, POST");
+header("Access-Control-Allow-Methods: GET, POST, PATCH");
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['new-fight'])) {
-        $newFighter = json_decode($_POST['new-fighter']);
-        $newId = insertFighter($newFighter);
+        $newFight = json_decode($_POST['new-fight']);
+        $newId = insertFight($newFight);
 
         if ($newId) {
             echo $newId;
@@ -32,4 +32,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo $apiOutput;
     } else
         http_response_code(204);
+} elseif ($_SERVER['REQUEST_METHOD'] === 'PATCH') {
+    // 
 }

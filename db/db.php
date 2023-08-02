@@ -47,3 +47,36 @@ function insertFighter(array $fighter): int
     }
     return $new;
 }
+
+/**
+ * Insert a fighter in the database and returns the id of the new entry
+ */
+function insertFight(array $fight): int
+{
+    $pdo = DbAccess::getInstance();
+
+    $idFighter1 = $fight['id-fighter1'];
+    $idFighter2 = $fight['id-fighter2'];
+
+    try {
+        $sql = "INSERT INTO fights (fighter_id_1, fighter_id_2) VALUES ($idFighter1, $idFighter2)";
+        $pdo->exec($sql);
+        $new = $pdo->lastInsertId('fighters');
+    } catch (PDOException $e) {
+        echo "Connection failed: " . $e->getMessage();
+    }
+    return $new;
+}
+
+function declareWinner(int $fightId, int $winnerId): bool
+{
+    $pdo = DbAccess::getInstance();
+
+    try {
+        $sql = "UPDATE fights SET winner = $winnerId WHERE id = $fightId";
+        $success = $pdo->exec($sql) || false;
+    } catch (PDOException $e) {
+        echo "Connection failed: " . $e->getMessage();
+    }
+    return $success ?? false;
+}
