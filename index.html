@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="public/bootstrap.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+    <link rel="stylesheet" href="./style.css" />
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.min.js"
+        integrity="sha384-cuYeSxntonz0PPNlHhBs68uyIAVpIIOZZ5JqeqvYYIcEL727kskC66kF92t6Xl2V"
+        crossorigin="anonymous"></script>
+    <script src="index.js" type="module"></script>
+</head>
+
+<body>
+    <div class="container">
+        <h1 class="display-1 animate__animated animate__rubberBand">Battle</h1>
+        <div id="prematch">
+            <div class="mb-5">
+                <p class="mb-1 display-6">Joueur</p>
+                <input type="hidden" name="player[id]" value="">
+                <label class="w-50">Choisir un combattant déjà existant :
+                    <select class="fighter1Select form-select">
+                        <option id="0" value=""></option>
+                    </select>
+                </label>
+                <div class="row" id="form-player1">
+                    <div class="col-6">
+                        <label class="form-label">Name</label>
+                        <input required="" type="text" class="form-control" name="player[name]" value="">
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label">Attaque</label>
+                        <input required="" type="number" class="form-control" value="25" name="player[attack]">
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label">Mana</label>
+                        <input required="" type="number" class="form-control" value="100" name="player[mana]">
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label">Santé</label>
+                        <input required="" type="number" class="form-control" value="150" name="player[health]">
+                    </div>
+                </div>
+            </div>
+            <div class="mb-5">
+                <p class="mb-1 display-6">Adversaire</p>
+                <input type="hidden" name="opponent[id]" value="">
+                <label class="w-50">Choisir un combattant déjà existant :
+                    <select class="fighter2Select form-select">
+                        <option id="0" value=""></option>
+                    </select>
+                </label>
+                <div class="row" id="form-player2">
+                    <div class="col-6">
+                        <label class="form-label">Name</label>
+                        <input required="" type="text" class="form-control" name="opponent[name]" value="">
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label">Attack</label>
+                        <input required="" type="number" class="form-control" value="20" name="opponent[attack]">
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label">Mana</label>
+                        <input required="" type="number" class="form-control" value="100" name="opponent[mana]">
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label">Santé</label>
+                        <input required="" type="number" class="form-control" value="200" name="opponent[health]">
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-2">
+                <div class="d-flex justify-content-center">
+                    <input class="btn btn-outline-secondary" id="fight" type="button" value="FIGHT">
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

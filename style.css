@@ -7,7 +7,10 @@ input[type=submit] {
     font-weight: 700;
     letter-spacing: 0.1rem;
 }
-input:read-only, input:read-only:focus {
+input[type=text]:read-only, input[type=text]:read-only:focus {
     background-color: #eee;
     cursor: not-allowed;
+}
+#hp-player1, #hp-player2 {
+    transition: width 500ms ease-in-out;
 }
