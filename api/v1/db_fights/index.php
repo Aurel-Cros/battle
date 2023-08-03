@@ -18,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 } elseif ($_SERVER['REQUEST_METHOD'] === 'GET') {
 
-    if (isset($routeArray[1])) {
+    if (isset($routeArray[1]) && !empty($routeArray[1])) {
         $ressource = $routeArray[1];
         if ($ressource === 'number-of-wins')
             $apiOutput = json_encode(getWinsByFighter());
