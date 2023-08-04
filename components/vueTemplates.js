@@ -1,4 +1,4 @@
-const match = {
+const matchTemplate = {
     tag: 'div',
     attrs: {
         class: "row gx-5",
@@ -198,4 +198,4 @@ const match = {
     ]
 }
 
-export default match
+export default matchTemplate

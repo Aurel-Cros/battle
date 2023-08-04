@@ -1,6 +1,6 @@
 import AudioFile from './Audio.js';
 import PageBuilder from './PageBuilder.js';
-import match from './vueTemplates.js'
+import matchTemplate from './vueTemplates.js'
 import Fighter from './Fighter.js';
 
 export default class App {
@@ -9,24 +9,111 @@ export default class App {
         this.prematch = document.querySelector("#prematch");
         this.audio = [];
         this.fighters = [];
+        this.logs = [];
+        this.fightId = null;
     }
 
     initBtns = {
-        fight: () => {
+        fight: async () => {
             const submitFight = document.querySelector("#fight");
-            this.audio.push(new AudioFile('fight.mp3', submitFight));
-            submitFight.addEventListener("click", this.startFight.bind(this));
+            submitFight.addEventListener("click", () => {
+                if (this.checkInput()) {
+                    console.log('Start fight')
+                    this.audio.push(new AudioFile('fight.mp3', submitFight));
+                    this.startFight.bind(this)();
+                }
+                else {
+                    // Error handler
+                    console.log('No fight')
+                }
+            });
+        },
+        match: () => {
+            this.initBtns.attack();
+            this.initBtns.heal();
+            this.initBtns.restart();
         },
         attack: () => {
-
             const submitAttack = document.querySelector("#attack");
             this.audio.push(new AudioFile('Haduken.mp3', submitAttack));
+            submitAttack.addEventListener("click", this.attack.bind(this));
+        },
+        heal: () => {
+            const healBtn = document.querySelector("#heal");
+            healBtn.addEventListener("click", this.heal.bind(this));
         },
         restart: () => {
             const submitRestart = document.querySelector("#restart");
             this.audio.push(new AudioFile('fatality.mp3', submitRestart));
+            submitRestart.addEventListener("click", this.reset.bind(this));
         }
     }
+
+    attack() {
+        this.fighters.forEach((fighter, index) => {
+
+            const otherFighter = this.fighters[Number(!index)];
+            const damage = otherFighter.attack;
+            fighter.takeDamage(damage);
+            const log = otherFighter.name + " attaque et inflige " + damage + " à " + fighter.name + " !";
+            this.updateLogs(log);
+        })
+        this.sendLogs();
+        this.updateVueValues();
+        this.checkWin();
+    }
+    heal() {
+        this.fighters.forEach((fighter) => {
+            const hasHealed = fighter.heal();
+            const log = hasHealed ?
+                fighter.name + " s'est soigné de " + hasHealed + " PV"
+                : fighter.name + " n'a plus de mana et n'a pas pu se soigner !";
+            this.updateLogs(log);
+        })
+        this.sendLogs();
+        this.updateVueValues();
+    }
+    reset() {
+        console.log("Reset fight");
+        this.fighters = [];
+        this.logs = [];
+        this.fightId = null;
+
+        this.container.replaceChildren(this.prematch);
+    }
+
+    updateLogs(newLog) {
+        this.logs.push(newLog);
+        this.updateVueLogs();
+    }
+    sendLogs() {
+        const payload = JSON.stringify({ newLogs: this.logs });
+        fetch(`./api/v1/fights/${this.fightId}/logs`, {
+            method: "PATCH",
+            body: payload
+        })
+    }
+    updateVueLogs() {
+        this.logsVue.replaceChildren(
+            ...this.logs.map(log => new PageBuilder({ tag: "li", content: log }))
+        )
+    }
+    checkWin() {
+        if (this.fighters[0].isAlive && !this.fighters[1].isAlive) {
+            // Player 1 wins
+        }
+        else if (!this.fighters[0].isAlive && this.fighters[1].isAlive) {
+            // Player 2 wins
+        }
+        else if (!this.fighters[0].isAlive && !this.fighters[1].isAlive) {
+            // DRAW
+        }
+        else
+            return;
+
+        this.reset();
+    }
+
     initFighterSelect() {
         fetch('./api/v1/fighters')
             .then(response => response.json())
@@ -64,18 +151,129 @@ export default class App {
                 })
             })
     }
-    startFight() {
+
+    checkInput() {
+        const { select, textInputs } = this.getInputs();
+
+        console.log("Select values : ", select[0].value, select[1].value);
+
+        if (select[0].value && select[1].value)
+            return true;
+
+        console.log("Selects not ok");
+
+        let send = true;
+        console.log(textInputs);
+        for (const player in textInputs) {
+            textInputs[player].forEach(input => {
+                const value = input.value;
+                console.log(input.name, " = ", value);
+
+                input.classList.remove('is-invalid');
+                input.classList.remove('is-valid');
+
+                if (Number.isInteger(value) && value < 1) {
+                    console.log(value, " is number but is not positive");
+                    input.classList.add('is-invalid');
+                    send = false;
+                }
+                else if (Number.isInteger(value)) {
+                    input.classList.add('is-valid');
+                }
+
+                if ((typeof value === 'string' || value instanceof String) && value.trim().length === 0) {
+                    console.log(value, " is string but empty");
+                    input.classList.add('is-invalid');
+                    send = false;
+                }
+                else if ((typeof value === 'string' || value instanceof String)) {
+                    input.classList.add('is-valid');
+                }
+            })
+        }
+        console.log(send ? 'Inputs ok' : 'Invalid inputs');
+        return send;
+    }
+
+    getInputs() {
         const fs = [document.querySelector(".fighter1Select"), document.querySelector(".fighter2Select")];
-        fs.forEach(sel => {
-            const newFighter = new Fighter(JSON.parse(sel.value));
-            this.fighters.push(newFighter);
-        });
-        console.log(this.fighters);
+        const textInputs = {
+            player1:
+                [
+                    document.querySelector("input[name='player[name]']"),
+                    document.querySelector("input[name='player[attack]']"),
+                    document.querySelector("input[name='player[mana]']"),
+                    document.querySelector("input[name='player[health]']")
+                ],
+            player2:
+                [
+                    document.querySelector("input[name='opponent[name]']"),
+                    document.querySelector("input[name='opponent[attack]']"),
+                    document.querySelector("input[name='opponent[mana]']"),
+                    document.querySelector("input[name='opponent[health]']")
+                ]
+        };
+        return { select: fs, textInputs: textInputs };
+    }
+    async createFighters() {
+        const { select, textInputs } = this.getInputs();
+        if (select[0].value && select[1].value) {
+            select.forEach(sel => {
+                const newFighter = new Fighter(JSON.parse(sel.value));
+                this.fighters.push(newFighter);
+            });
+        }
+        else if (textInputs.player1 && textInputs.player2) {
+            for (const player in textInputs) {
+                const randHealRate = Math.round(Math.random() * 10) + 15;
+                const p = textInputs[player];
+                console.log(p);
+                const newFighterToAPI = {
+                    name: p[0].value,
+                    attack: p[1].value,
+                    mana: p[2].value,
+                    health: p[3].value,
+                    healRatio: randHealRate
+                }
+                const newFighterId = await fetch('./api/v1/fighters', {
+                    method: "POST",
+                    body: JSON.stringify(newFighterToAPI)
+                })
+                    .then(response => response.text())
+                    .then(data => data);
+                
+                newFighterToAPI.id = Number(newFighterId);
+                const newFighter = new Fighter(newFighterToAPI);
+                this.fighters.push(newFighter);
+            }
+        }
+    }
+    async startFight() {
+        if (!await this.createFighters()) {
+
+            return;
+        }
+
+        const fightInfos = JSON.stringify({
+            id_fighter1: this.fighters[0].id,
+            id_fighter2: this.fighters[1].id
+        })
+        fetch('./api/v1/fights', {
+            method: "POST",
+            body: fightInfos
+        })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                this.fightId = Number(data.newFightId);
+            });
         this.prematch.remove();
         this.createBattleVue();
     }
+
     createBattleVue() {
-        this.matchVue = new PageBuilder(match);
+        this.matchVue = new PageBuilder(matchTemplate);
+        this.logsVue = this.matchVue.querySelector(".battleLog");
 
         this.fighters[0].vue = {
             name: this.matchVue.querySelector("#name-player1"),
@@ -91,22 +289,22 @@ export default class App {
             mana: this.matchVue.querySelector("#mana-player2"),
             avatar: this.matchVue.querySelector("#avatar-player2")
         }
-        console.log(this.fighters);
 
         this.fighters[0].vue.avatar.src = `https://api.dicebear.com/6.x/lorelei/svg?flip=false&seed=${this.fighters[0].name}`;
         this.fighters[1].vue.avatar.src = `https://api.dicebear.com/6.x/lorelei/svg?flip=true&seed=${this.fighters[1].name}`;
 
         this.updateVueValues();
         this.container.append(this.matchVue);
+        this.initBtns.match();
     }
     updateVueValues() {
         this.fighters[0].vue.name.textContent = 'Name : ' + this.fighters[0].name;
-        this.fighters[0].vue.health.textContent = this.fighters[0].health;
+        this.fighters[0].vue.health.textContent = this.fighters[0].health + ' / ' + this.fighters[0].maxHealth;
         this.fighters[0].vue.attack.textContent = 'Attack : ' + this.fighters[0].attack;
         this.fighters[0].vue.mana.textContent = 'Mana : ' + this.fighters[0].mana;
 
         this.fighters[1].vue.name.textContent = 'Name : ' + this.fighters[1].name;
-        this.fighters[1].vue.health.textContent = this.fighters[1].health;
+        this.fighters[1].vue.health.textContent = this.fighters[1].health + ' / ' + this.fighters[1].maxHealth;
         this.fighters[1].vue.attack.textContent = 'Attack : ' + this.fighters[1].attack;
         this.fighters[1].vue.mana.textContent = 'Mana : ' + this.fighters[1].mana;
     }

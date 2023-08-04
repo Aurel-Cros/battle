@@ -9,10 +9,14 @@ export default class Fighter {
         this.maxMana = stats.mana;
         this.attack = stats.attack;
         this.healRatio = stats.healRatio;
+        this.vue = null;
+    }
+    updateLifebar() {
+        this.vue.health.style.width = 200 * this.health / this.maxHealth + '%';
     }
     takeDamage(amount) {
         this.health = Math.max(this.health - amount, 0);
-
+        this.updateLifebar();
         if (this.health <= 0)
             this.isAlive = false;
     }
@@ -22,10 +26,11 @@ export default class Fighter {
 
         const oldHealth = this.health;
 
-        const amount = Math.round(this.health * (this.healRatio / 100));
+        const amount = Math.round(this.maxHealth * (this.healRatio / 100));
         this.health = Math.min(this.maxHealth, this.health + amount);
         this.mana = Math.max(this.mana - this.healRatio, 0);
 
+        this.updateLifebar();
         return (this.health - oldHealth);
     }
 }
