@@ -102,19 +102,30 @@ export default class App {
     checkWin() {
         if (this.fighters[0].isAlive && !this.fighters[1].isAlive) {
             // Player 1 wins
+            this.declareWin(this.fighters[0]);
         }
         else if (!this.fighters[0].isAlive && this.fighters[1].isAlive) {
             // Player 2 wins
+            this.declareWin(this.fighters[1]);
         }
         else if (!this.fighters[0].isAlive && !this.fighters[1].isAlive) {
             // DRAW
+            this.declareWin(null);
         }
         else
             return;
-
-        this.reset();
     }
-
+    declareWin(winner) {
+        if (winner === null) {
+            // 
+            return;
+        }
+        const payload = JSON.stringify({ fighterId: winner.id });
+        fetch(`./api/v1/fights/${this.fightId}/winner`, {
+            method: "PATCH",
+            body: payload
+        });
+    }
     initFighterSelect() {
         fetch('./api/v1/fighters')
             .then(response => response.json())
@@ -206,7 +217,6 @@ export default class App {
                 else if ((typeof value === 'string' || value instanceof String)) {
                     input.classList.add('is-valid');
                 }
-                console.log(this.existingFighters.find(fighter => { console.log(fighter.name); return fighter.name == value }), value);
             })
         }
         console.log(send ? 'Inputs ok' : 'Invalid inputs');
@@ -233,6 +243,7 @@ export default class App {
         };
         return { select: fs, textInputs: textInputs };
     }
+
     async createFighters() {
         const { select, textInputs } = this.getInputs();
         if (select[0].value && select[1].value) {
@@ -265,12 +276,11 @@ export default class App {
                 this.fighters.push(newFighter);
             }
         }
+
+        return true;
     }
     async startFight() {
-        if (!await this.createFighters()) {
-
-            return;
-        }
+        await this.createFighters();
 
         const fightInfos = JSON.stringify({
             id_fighter1: this.fighters[0].id,
