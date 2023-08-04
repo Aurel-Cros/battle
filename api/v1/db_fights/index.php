@@ -5,13 +5,14 @@ header("Access-Control-Allow-Methods: GET, POST, PATCH");
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
-    if (isset($_POST['new-fight'])) {
+    $content = trim(file_get_contents("php://input"));
+    if (!empty($content)) {
 
-        $newFight = json_decode($_POST['new-fight']);
+        $newFight = json_decode($content, true);
         $newId = insertFight($newFight);
 
         if ($newId) {
-            echo $newId;
+            echo '{"newFightId":"' . $newId . '"}';
             http_response_code(201);
         } else
             http_response_code(204);
@@ -36,22 +37,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         http_response_code(204);
 } elseif ($_SERVER['REQUEST_METHOD'] === 'PATCH') {
 
-    if (isset($routeArray[2], $_POST['fight-id'])) {
+    $content = trim(file_get_contents("php://input"));
 
+    if (isset($routeArray[2]) && !empty($content)) {
+
+        $content = json_decode($content, true);
         $ressource = $routeArray[2];
-        $fight = intval($_POST['fight-id']);
+        $fight = intval($routeArray[1]);
 
-        if ($ressource === 'winner' && isset($_POST['fighter-id'])) {
+        if ($ressource === 'winner' && isset($content['fighterId'])) {
 
-            $fighter = intval($_POST['fighter-id']);
+            $fighter = intval($content['fighterId']);
 
-            declareWinner($fight, $fighter);
-            http_response_code(201);
-        } elseif ($ressource === 'logs' && isset($_POST['new-logs'])) {
+            if (declareWinner($fight, $fighter))
+                http_response_code(204);
+            else
+                http_response_code(500);
+        } elseif ($ressource === 'logs' && isset($content['newLogs'])) {
 
-            $newLogs = $_POST['new-logs'];
-            updateLogs($fight, $newsLogs);
-            http_response_code(201);
+            $newLogs = $content['newLogs'];
+            $res = updateLogs($fight, $newLogs);
+            echo $res, $fight;
+            if ($res)
+                http_response_code(204);
+            else
+                http_response_code(500);
         } else
             http_response_code(400);
     } else

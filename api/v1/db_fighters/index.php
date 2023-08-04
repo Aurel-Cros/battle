@@ -9,8 +9,10 @@ header("Content-Type: application/json; charset=UTF-8");
 header("Access-Control-Allow-Methods: GET, POST");
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (isset($_POST['new-fighter'])) {
-        $newFighter = json_decode($_POST['new-fighter']);
+    $content = trim(file_get_contents("php://input"));
+
+    if (!empty($content)) {
+        $newFighter = json_decode($content, true);
         $newId = insertFighter($newFighter);
 
         if ($newId) {

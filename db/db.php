@@ -18,7 +18,10 @@ function getFighter(int $id): array
 {
     $pdo = DbAccess::getInstance();
     try {
-        $fighter = $pdo->query("SELECT * FROM `fighters` WHERE id=$id")->fetch(PDO::FETCH_ASSOC);
+        $query = "SELECT * FROM `fighters` WHERE id = ?";
+        $prep = $pdo->prepare($query);
+        $prep->execute([$id]);
+        $fighter = $prep->fetch(PDO::FETCH_ASSOC);
     } catch (PDOException $e) {
         echo "Connection failed: " . $e->getMessage();
     }
@@ -55,12 +58,17 @@ function insertFight(array $fight): int
 {
     $pdo = DbAccess::getInstance();
 
-    $idFighter1 = $fight['id-fighter1'];
-    $idFighter2 = $fight['id-fighter2'];
-
+    $idFighter1 = $fight['id_fighter1'];
+    $idFighter2 = $fight['id_fighter2'];
+    if (!is_int($idFighter1) || !is_int($idFighter2))
+        throw new Error('Incorrect input.');
     try {
-        $sql = "INSERT INTO fights (fighter_id_1, fighter_id_2) VALUES ($idFighter1, $idFighter2)";
-        $pdo->exec($sql);
+        $sql = "INSERT INTO fights (fighter_id_1, fighter_id_2) VALUES (:id1, :id2)";
+        $prep = $pdo->prepare($sql);
+        $prep->execute([
+            "id1" => $idFighter1,
+            "id2" => $idFighter2
+        ]);
         $new = $pdo->lastInsertId('fighters');
     } catch (PDOException $e) {
         echo "Connection failed: " . $e->getMessage();
@@ -70,10 +78,14 @@ function insertFight(array $fight): int
 function updateLogs(int $fightId, array $newLogs)
 {
     $pdo = DbAccess::getInstance();
-    $logs = json_encode($newLogs);
     try {
-        $sql = "UPDATE fights SET logs = $logs WHERE id = $fightId";
-        $success = $pdo->exec($sql) || false;
+        $newLogs = json_encode($newLogs);
+        $query = "UPDATE fights SET logs = :logs WHERE id = :id";
+        $prep = $pdo->prepare($query);
+        $success = $prep->execute([
+            "logs" => $newLogs,
+            "id" => $fightId
+        ]);
     } catch (PDOException $e) {
         echo "Connection failed: " . $e->getMessage();
     }
@@ -84,8 +96,12 @@ function declareWinner(int $fightId, int $winnerId): bool
     $pdo = DbAccess::getInstance();
 
     try {
-        $sql = "UPDATE fights SET winner = $winnerId WHERE id = $fightId";
-        $success = $pdo->exec($sql) || false;
+        $query = "UPDATE fights SET winner = :winner WHERE id = :fight";
+        $prep = $pdo->prepare($query);
+        $success = $prep->execute([
+            "winner" => $winnerId,
+            "fight" => $fightId
+        ]);
     } catch (PDOException $e) {
         echo "Connection failed: " . $e->getMessage();
     }
@@ -108,7 +124,9 @@ function getFight(int $id): array
 {
     $pdo = DbAccess::getInstance();
     try {
-        $fight = $pdo->query("SELECT * FROM `fights` WHERE id=$id")->fetch(PDO::FETCH_ASSOC);
+        $prep = $pdo->prepare("SELECT * FROM `fights` WHERE id=?");
+        $prep->execute([$id]);
+        $fight = $prep->fetch(PDO::FETCH_ASSOC);
     } catch (PDOException $e) {
         echo "Connection failed: " . $e->getMessage();
     }
