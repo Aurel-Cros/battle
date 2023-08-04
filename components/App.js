@@ -8,6 +8,7 @@ export default class App {
         this.container = document.querySelector(".container");
         this.prematch = document.querySelector("#prematch");
         this.audio = [];
+        this.existingFighters = [];
         this.fighters = [];
         this.logs = [];
         this.fightId = null;
@@ -122,6 +123,9 @@ export default class App {
                 fs.forEach((sel, index) => {
                     data.forEach(fighter => {
 
+                        if (index === 0)
+                            this.existingFighters.push(fighter);
+
                         const option = new PageBuilder({
                             tag: 'option',
                             content: fighter.name,
@@ -166,7 +170,12 @@ export default class App {
         console.log(textInputs);
         for (const player in textInputs) {
             textInputs[player].forEach(input => {
-                const value = input.value;
+                if (!/^[a-z0-9 ]+$/.test(input.value)) {
+                    input.classList.add('is-invalid');
+                    send = false;
+                    return;
+                }
+                const value = input.value.replaceAll(' ', ' ');
                 console.log(input.name, " = ", value);
 
                 input.classList.remove('is-invalid');
@@ -186,9 +195,18 @@ export default class App {
                     input.classList.add('is-invalid');
                     send = false;
                 }
+                else if ((typeof value === 'string' || value instanceof String) &&
+                    this.existingFighters.find(fighter => fighter.name == value)) {
+
+                    console.log(value, " already exists");
+
+                    input.classList.add('is-invalid');
+                    send = false;
+                }
                 else if ((typeof value === 'string' || value instanceof String)) {
                     input.classList.add('is-valid');
                 }
+                console.log(this.existingFighters.find(fighter => { console.log(fighter.name); return fighter.name == value }), value);
             })
         }
         console.log(send ? 'Inputs ok' : 'Invalid inputs');
@@ -229,7 +247,7 @@ export default class App {
                 const p = textInputs[player];
                 console.log(p);
                 const newFighterToAPI = {
-                    name: p[0].value,
+                    name: p[0].value.replaceAll(' ', ' '),
                     attack: p[1].value,
                     mana: p[2].value,
                     health: p[3].value,
@@ -241,7 +259,7 @@ export default class App {
                 })
                     .then(response => response.text())
                     .then(data => data);
-                
+
                 newFighterToAPI.id = Number(newFighterId);
                 const newFighter = new Fighter(newFighterToAPI);
                 this.fighters.push(newFighter);

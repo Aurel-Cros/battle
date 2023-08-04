@@ -19,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             echo $newId;
             http_response_code(201);
         } else {
-            http_response_code(204);
+            http_response_code(400);
         }
     }
 } elseif ($_SERVER['REQUEST_METHOD'] === 'GET') {

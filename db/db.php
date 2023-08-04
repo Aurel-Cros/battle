@@ -41,12 +41,16 @@ function insertFighter(array $fighter): int
     $mana = $fighter['mana'];
     $healR = $fighter['healRatio'];
 
-    try {
-        $sql = "INSERT INTO fighters (name, health, attack, mana, healRatio) VALUES (?,?,?,?,?)";
-        $pdo->prepare($sql)->execute([$name, $health, $attack, $mana, $healR]);
-        $new = $pdo->lastInsertId('fighters');
-    } catch (PDOException $e) {
-        echo "Connection failed: " . $e->getMessage();
+    if (!preg_match('/^[a-z0-9 ]+$/', $name)) {
+        $new = false;
+    } else {
+        try {
+            $sql = "INSERT INTO fighters (name, health, attack, mana, healRatio) VALUES (?,?,?,?,?)";
+            $pdo->prepare($sql)->execute([$name, $health, $attack, $mana, $healR]);
+            $new = $pdo->lastInsertId('fighters');
+        } catch (PDOException $e) {
+            echo "Connection failed: " . $e->getMessage();
+        }
     }
     return $new;
 }
