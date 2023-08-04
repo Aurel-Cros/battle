@@ -41,7 +41,7 @@ function insertFighter(array $fighter): int
     $mana = $fighter['mana'];
     $healR = $fighter['healRatio'];
 
-    if (!preg_match('/^[a-z0-9 ]+$/', $name)) {
+    if (!preg_match('/^[a-z0-9 ]+$/i', $name)) {
         $new = false;
     } else {
         try {

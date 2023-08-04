@@ -1,6 +1,6 @@
 import AudioFile from './Audio.js';
 import PageBuilder from './PageBuilder.js';
-import matchTemplate from './vueTemplates.js'
+import vueTemplates from './vueTemplates.js'
 import Fighter from './Fighter.js';
 
 export default class App {
@@ -81,6 +81,7 @@ export default class App {
         this.fightId = null;
 
         this.container.replaceChildren(this.prematch);
+        this.initFighterSelect();
     }
 
     updateLogs(newLog) {
@@ -116,22 +117,30 @@ export default class App {
             return;
     }
     declareWin(winner) {
-        if (winner === null) {
-            // 
-            return;
+        let resultText;
+        if (winner != null) {
+            resultText = `${winner.name} est le vainqueur !`;
+
+            const payload = JSON.stringify({ fighterId: winner.id });
+            fetch(`./api/v1/fights/${this.fightId}/winner`, {
+                method: "PATCH",
+                body: payload
+            });
         }
-        const payload = JSON.stringify({ fighterId: winner.id });
-        fetch(`./api/v1/fights/${this.fightId}/winner`, {
-            method: "PATCH",
-            body: payload
-        });
+        else
+            resultText = 'Les deux opponents sont KO, égalité !';
+
+        this.updateVueToResults(resultText);
     }
     initFighterSelect() {
         fetch('./api/v1/fighters')
             .then(response => response.json())
             .then(data => {
                 const fs = [document.querySelector(".fighter1Select"), document.querySelector(".fighter2Select")];
+                console.log('Reset first view');
                 fs.forEach((sel, index) => {
+                    sel.replaceChildren();
+                    sel.appendChild(new PageBuilder({ tag: "option" }))
                     data.forEach(fighter => {
 
                         if (index === 0)
@@ -181,13 +190,16 @@ export default class App {
         console.log(textInputs);
         for (const player in textInputs) {
             textInputs[player].forEach(input => {
-                if (!/^[a-z0-9 ]+$/.test(input.value)) {
+                const pattern = /^[a-z0-9 ]+$/i;
+
+                if (!pattern.test(input.value)) {
+                    console.log('Regex fail on ', input.value);
                     input.classList.add('is-invalid');
                     send = false;
                     return;
                 }
+
                 const value = input.value.replaceAll(' ', ' ');
-                console.log(input.name, " = ", value);
 
                 input.classList.remove('is-invalid');
                 input.classList.remove('is-valid');
@@ -300,7 +312,7 @@ export default class App {
     }
 
     createBattleVue() {
-        this.matchVue = new PageBuilder(matchTemplate);
+        this.matchVue = new PageBuilder(vueTemplates.match);
         this.logsVue = this.matchVue.querySelector(".battleLog");
 
         this.fighters[0].vue = {
@@ -324,6 +336,18 @@ export default class App {
         this.updateVueValues();
         this.container.append(this.matchVue);
         this.initBtns.match();
+    }
+    updateVueToResults(resultText) {
+        this.matchVue.querySelector("#combats").remove();
+
+        const result = new PageBuilder(vueTemplates.result);
+        const resetBtn = result.querySelector("input");
+        result.insertBefore(document.createTextNode(resultText), result.querySelector("div"));
+        resetBtn.addEventListener("click", () => {
+            this.reset();
+        });
+
+        this.matchVue.appendChild(result);
     }
     updateVueValues() {
         this.fighters[0].vue.name.textContent = 'Name : ' + this.fighters[0].name;
