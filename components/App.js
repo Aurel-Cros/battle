@@ -183,12 +183,21 @@ export default class App {
 
         if (select[0].value && select[1].value)
             return true;
+        const player1Ok = select[0].value ? true : false;
+        const player2Ok = select[1].value ? true : false;
 
-        console.log("Selects not ok");
+        console.log("Selects not both ok");
 
         let send = true;
         console.log(textInputs);
+        let i = 0;
         for (const player in textInputs) {
+            i++;
+            if (i === 1 && player1Ok)
+                continue;
+            if (i === 2 && player2Ok)
+                continue;
+
             textInputs[player].forEach(input => {
                 const pattern = /^[a-z0-9 ]+$/i;
 
@@ -258,22 +267,25 @@ export default class App {
 
     async createFighters() {
         const { select, textInputs } = this.getInputs();
-        if (select[0].value && select[1].value) {
-            select.forEach(sel => {
+
+        for (const index in select) {
+            const sel = select[index];
+            if (sel.value) {
                 const newFighter = new Fighter(JSON.parse(sel.value));
                 this.fighters.push(newFighter);
-            });
-        }
-        else if (textInputs.player1 && textInputs.player2) {
-            for (const player in textInputs) {
+            }
+            else {
+                const playerNumber = Number(index) + 1;
+                const player = textInputs['player' + playerNumber];
+                console.log(textInputs, player, playerNumber);
+
                 const randHealRate = Math.round(Math.random() * 10) + 15;
-                const p = textInputs[player];
-                console.log(p);
+
                 const newFighterToAPI = {
-                    name: p[0].value.replaceAll(' ', ' '),
-                    attack: p[1].value,
-                    mana: p[2].value,
-                    health: p[3].value,
+                    name: player[0].value.replaceAll(' ', ' '),
+                    attack: player[1].value,
+                    mana: player[2].value,
+                    health: player[3].value,
                     healRatio: randHealRate
                 }
                 const newFighterId = await fetch('./api/v1/fighters', {
