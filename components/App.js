@@ -2,6 +2,7 @@ import AudioFile from './Audio.js';
 import PageBuilder from './PageBuilder.js';
 import vueTemplates from './vueTemplates.js'
 import Fighter from './Fighter.js';
+import HallOfFame from './HallOfFame.js';
 
 export default class App {
     constructor() {
@@ -49,7 +50,13 @@ export default class App {
             submitRestart.addEventListener("click", this.reset.bind(this));
         }
     }
-
+    initHOF() {
+        const link = document.querySelector(".toHallOfFame");
+        link.addEventListener("click", (e) => {
+            e.preventDefault();
+            new HallOfFame(document.body);
+        })
+    }
     attack() {
         this.fighters.forEach((fighter, index) => {
 

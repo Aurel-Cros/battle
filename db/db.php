@@ -141,12 +141,12 @@ function getWinsByFighter()
 {
     $pdo = DbAccess::getInstance();
     try {
-        $query = 'SELECT fighters.name, COUNT(winner) AS Wins
+        $query = 'SELECT fighters.name, COUNT(winner) AS wins
             FROM fights
             JOIN fighters
             ON fighters.id = fights.winner
             GROUP BY winner
-            ORDER BY Wins DESC
+            ORDER BY wins DESC
         ;';
 
         $fight = $pdo->query($query)->fetchAll(PDO::FETCH_ASSOC);

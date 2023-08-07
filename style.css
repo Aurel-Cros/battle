@@ -14,3 +14,30 @@ input[type=text]:read-only, input[type=text]:read-only:focus {
 #hp-player1, #hp-player2 {
     transition: width 500ms ease-in-out;
 }
+.wins-modal {
+    position: absolute;
+    z-index: 1;
+    top: 0;
+    left: 0;
+    backdrop-filter: blur(24px);
+    width: 100vw;
+    height: 100vh;
+    padding: 8rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 4rem;
+}
+.wins-modal #wins-chart {
+    max-width: 900px;
+    max-height: 400px;
+}
+.wins-modal .modal-close {
+    border: none;
+    border-radius: 10px;
+    padding: 1rem;
+    font-size: 1rem;
+    font-weight: bold;
+    text-transform: uppercase;
+}
