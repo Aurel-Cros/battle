@@ -147,6 +147,7 @@ function getWinsByFighter()
             ON fighters.id = fights.winner
             GROUP BY winner
             ORDER BY wins DESC
+            LIMIT 10
         ;';
 
         $fight = $pdo->query($query)->fetchAll(PDO::FETCH_ASSOC);
