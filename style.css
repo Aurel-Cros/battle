@@ -28,16 +28,13 @@ input[type=text]:read-only, input[type=text]:read-only:focus {
     justify-content: center;
     align-items: center;
     gap: 4rem;
+    opacity: 0;
+    transition: opacity 350ms ease-in-out;
+}
+.wins-modal.show {
+    opacity: 1;
 }
 .wins-modal #wins-chart {
     max-width: 900px;
     max-height: 400px;
-}
-.wins-modal .modal-close {
-    border: none;
-    border-radius: 10px;
-    padding: 1rem;
-    font-size: 1rem;
-    font-weight: bold;
-    text-transform: uppercase;
 }

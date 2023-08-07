@@ -28,7 +28,7 @@ export default class HallOfFame {
                 {
                     tag: "button",
                     attrs: {
-                        class: "modal-close btn"
+                        class: "modal-close btn btn-outline-secondary"
                     },
                     content: "Fermer"
                 }
@@ -36,12 +36,18 @@ export default class HallOfFame {
         }
         this.element = new PageBuilder(template);
         this.container.append(this.element);
+        setTimeout(() => {
+            this.element.classList.add('show');
+        }, 5);
     }
 
     initCloseBtn() {
         this.closeBtn = this.element.querySelector(".modal-close");
-        this.closeBtn.addEventListener("click", (e) => {
-            this.element.remove();
+        this.closeBtn.addEventListener("click", () => {
+            this.element.classList.remove('show');
+            setTimeout(() => {
+                this.element.remove();
+            }, 500);
         })
     }
 
