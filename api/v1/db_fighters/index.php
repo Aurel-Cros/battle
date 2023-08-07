@@ -1,9 +1,4 @@
 <?php
-require_once('../../lib/utils.php');
-$root = FilesManager::rootDirectory();
-require_once($root . '/db/db.php');
-require_once($root . '/vendor/autoload.php');
-
 header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json; charset=UTF-8");
 header("Access-Control-Allow-Methods: GET, POST");

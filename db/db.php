@@ -141,14 +141,33 @@ function getWinsByFighter()
 {
     $pdo = DbAccess::getInstance();
     try {
-        $query = 'SELECT fighters.name, COUNT(winner) AS wins
-            FROM fights
-            JOIN fighters
-            ON fighters.id = fights.winner
+        $query = 'SELECT frs.name, COUNT(winner) AS wins
+            FROM fights f
+            JOIN fighters frs
+            ON frs.id = f.winner
             GROUP BY winner
             ORDER BY wins DESC
             LIMIT 10
         ;';
+
+        $fight = $pdo->query($query)->fetchAll(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+        echo "Connection failed: " . $e->getMessage();
+    }
+    return $fight ? $fight : ["empty" => true];
+}
+function getLossesByFighter()
+{
+    $pdo = DbAccess::getInstance();
+    try {
+        $query = 'SELECT f.name, COUNT(*) AS losses
+            FROM fighters f
+            LEFT JOIN fights fi1 ON f.id = fi1.fighter_id_1 AND f.id <> fi1.winner
+            LEFT JOIN fights fi2 ON f.id = fi2.fighter_id_2 AND f.id <> fi2.winner
+            GROUP BY f.id, f.name
+            ORDER BY losses DESC
+            LIMIT 3
+            ;';
 
         $fight = $pdo->query($query)->fetchAll(PDO::FETCH_ASSOC);
     } catch (PDOException $e) {

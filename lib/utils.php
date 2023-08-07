@@ -8,22 +8,6 @@ class FilesManager
     }
 }
 
-/**
- * Refills fighters "john"'s health by a percentage of their max health, and consumes that much mana in exchange.
- * Returns the amount healed if healing is applied, or false if mana is depleted.
- */
-function heal(array &$john): int | bool
-{
-    if ($john['mana'] >= $john['healRatio']) {
-        $startingHealth = $john['health'];
-        $john['mana'] -= $john['healRatio'];
-        $john['health'] = round(min($john['maxHealth'], $john['health'] + $john['maxHealth'] * $john['healRatio'] / 100));
-        $diff = $john['health'] - $startingHealth;
-        return $diff;
-    } else
-        return false;
-}
-
 function areInputsValid(array $player, array $opponent): bool
 {
     $valid = true;
