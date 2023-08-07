@@ -12,7 +12,7 @@ export default class Fighter {
         this.vue = null;
     }
     updateLifebar() {
-        this.vue.health.style.width = 200 * this.health / this.maxHealth + '%';
+        this.vue.health.style.width = 100 * this.health / this.maxHealth + '%';
     }
     takeDamage(amount) {
         this.health = Math.max(this.health - amount, 0);

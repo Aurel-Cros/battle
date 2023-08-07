@@ -3,7 +3,7 @@ const vueTemplates =
     match: {
         tag: 'div',
         attrs: {
-            class: "row gx-5",
+            class: "row gx-5 gap-3",
             id: "match"
         },
         children: [
@@ -14,13 +14,13 @@ const vueTemplates =
             {
                 tag: "div",
                 attrs: {
-                    class: "col-6"
+                    class: "col-6 row mt-3 justify-content-end"
                 },
                 children: [
                     {
                         tag: "div",
                         attrs: {
-                            class: "position-relative float-end"
+                            class: "pt-1 position-relative d-flex flex-column align-items-end w-75"
                         },
                         children: [
                             {
@@ -35,7 +35,7 @@ const vueTemplates =
                             {
                                 tag: "span",
                                 attrs: {
-                                    style: "width: 200%",
+                                    style: "width: 100%",
                                     class: "position-absolute top-0 end-0 translate-middle-y badge rounded-pill bg-transparent border border-2 border-danger"
                                 },
                                 content: " "
@@ -44,7 +44,7 @@ const vueTemplates =
                             {
                                 tag: "span",
                                 attrs: {
-                                    style: "width: 200%",
+                                    style: "width: 100%",
                                     id: "hp-player1",
                                     class: "position-absolute top-0 end-0 translate-middle-y badge rounded-pill bg-danger"
                                 },
@@ -81,13 +81,13 @@ const vueTemplates =
                 tag: "div",
                 attrs: {
                     id: "opponent",
-                    class: "col-6"
+                    class: "col-6 row mt-3 justify-content-start"
                 },
                 children: [
                     {
                         tag: "div",
                         attrs: {
-                            class: "position-relative float-start"
+                            class: "pt-1 position-relative d-flex flex-column align-items-start w-75"
                         },
                         children: [
                             {
@@ -102,7 +102,7 @@ const vueTemplates =
                             {
                                 tag: "span",
                                 attrs: {
-                                    style: "width: 200%",
+                                    style: "width: 100%",
                                     class: "position-absolute top-0 start-0 translate-middle-y badge rounded-pill bg-transparent border border-2 border-danger"
                                 },
                                 content: " "
@@ -111,7 +111,7 @@ const vueTemplates =
                             {
                                 tag: "span",
                                 attrs: {
-                                    style: "width: 200%",
+                                    style: "width: 100%",
                                     id: "hp-player2",
                                     class: "position-absolute top-0 start-0 translate-middle-y badge rounded-pill bg-danger"
                                 },
