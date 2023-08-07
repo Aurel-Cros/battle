@@ -165,8 +165,8 @@ function getLossesByFighter()
             LEFT JOIN fights fi1 ON f.id = fi1.fighter_id_1 AND f.id <> fi1.winner
             LEFT JOIN fights fi2 ON f.id = fi2.fighter_id_2 AND f.id <> fi2.winner
             GROUP BY f.id, f.name
-            ORDER BY losses DESC
-            LIMIT 3
+            ORDER BY losses DESC, f.id DESC
+            LIMIT 10
             ;';
 
         $fight = $pdo->query($query)->fetchAll(PDO::FETCH_ASSOC);

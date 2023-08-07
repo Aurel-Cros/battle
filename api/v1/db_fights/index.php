@@ -21,9 +21,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (isset($routeArray[1]) && !empty($routeArray[1])) {
         $ressource = $routeArray[1];
+
         if ($ressource === 'number-of-wins')
             $apiOutput = json_encode(getWinsByFighter());
-        else {
+        else if ($ressource === 'number-of-losses') {
+            $apiOutput = json_encode(getLossesByFighter());
+        } else {
             $id = intval($ressource);
             $apiOutput = json_encode(getFight($id));
         }
