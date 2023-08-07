@@ -80,7 +80,11 @@ export default class App {
         this.logs = [];
         this.fightId = null;
 
-        this.container.replaceChildren(this.prematch);
+        this.matchVue.remove();
+        this.container.appendChild(this.prematch);
+
+        const forms = document.querySelectorAll(`[id^=form-player]`);
+        forms.forEach(form => { form.classList.remove('d-none') })
         this.initFighterSelect();
     }
 
@@ -158,7 +162,6 @@ export default class App {
                     });
 
                     const form = document.querySelector(`#form-player${index + 1}`);
-                    const formParent = form.parentElement;
                     sel.addEventListener("change", (e) => {
                         fs[Number(!index)].querySelectorAll('option')
                             .forEach(option => {
@@ -168,9 +171,9 @@ export default class App {
                                     option.disabled = false;
                             });
                         if (e.target.value)
-                            form.remove();
+                            form.classList.add('d-none');
                         else
-                            formParent.appendChild(form);
+                            form.classList.remove('d-none');
                     });
                 })
             })
