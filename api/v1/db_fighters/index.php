@@ -6,17 +6,14 @@ header("Access-Control-Allow-Methods: GET, POST");
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $content = trim(file_get_contents("php://input"));
 
-    if (!empty($content)) {
-        $newFighter = json_decode($content, true);
-        $newId = insertFighter($newFighter);
+    if (empty($content))
+        return;
 
-        if ($newId) {
-            echo $newId;
-            http_response_code(201);
-        } else {
-            http_response_code(400);
-        }
-    }
+    $newFighter = json_decode($content, true);
+    $newId = insertFighter($newFighter);
+
+    echo $newId ?? null;
+    http_response_code($newId ? 201 : 400);
 } elseif ($_SERVER['REQUEST_METHOD'] === 'GET') {
     if (isset($routeArray[1]) && !empty($routeArray[1])) {
         $id = intval($routeArray[1]);
